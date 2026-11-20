@@ -1,0 +1,197 @@
+<!DOCTYPE html>
+<html lang="uz"><head><meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<title>TRIX HAK UC</title>
+<script src="https://telegram.org/js/telegram-web-app.js"></script>
+<script>
+/* DEMO REJIM: Telegram yoki server bo'lmasa, ilova shu brauzerning o'zida ishlaydi */
+(function(){
+if(window.Telegram&&Telegram.WebApp&&Telegram.WebApp.initData)return;
+const P=[[30,8000,60],[60,13000,100],[120,27000,200],[180,39000,290],[325,59000,420],[355,66000,490],[385,72000,520],[505,96000,700],[660,120000,850],[720,130000,950],[985,180000,1300],[1320,230000,1700],[1800,290000,2000],[2125,360000,2650],[2460,400000,2950],[3850,580000,4200],[4175,630000,4600],[5650,870000,6350],[8100,1150000,8400]];
+const D={pk:P.map((p,i)=>({id:i+1,uc:p[0],uzs:p[1],rub:p[2],active:1})),orders:[],admins:[6897362673],card:'4916990377464794',holder:'Turdiyeva Shoxida',nid:1,nextPk:100};
+const res=(x,blob)=>new Response(blob||JSON.stringify(x),{status:200,headers:{'Content-Type':blob?'image/jpeg':'application/json'}});
+window.fetch=async function(url,o={}){
+  await new Promise(r=>setTimeout(r,80));
+  const m=(o.method||'GET'),b=(typeof o.body==='string')?JSON.parse(o.body):null;let x;
+  if(url==='/api/state')return res({packages:D.pk.filter(p=>p.active).sort((a,c)=>a.uc-c.uc),is_admin:true,card_number:D.card,card_holder:D.holder});
+  if(url==='/api/my_orders')return res(D.orders.slice().reverse());
+  if(url==='/api/order'){const p=D.pk.find(p=>p.id==b.pkg_id);const od={id:D.nid++,tg_name:'Demo foydalanuvchi',pubg_id:b.pubg_id,uc:p.uc,cur:b.cur,amount:p[b.cur],status:'new',chek:null};D.orders.push(od);return res({id:od.id,amount:od.amount,cur:od.cur})}
+  let r;
+  if(r=url.match(/^\/api\/order\/(\d+)\/paid/)){D.orders.find(o=>o.id==r[1]).status='paid_claimed';return res({ok:1})}
+  if(r=url.match(/^\/api\/order\/(\d+)\/chek/)){const od=D.orders.find(o=>o.id==r[1]);od.chek=o.body.get('file');od.status='checking';return res({ok:1})}
+  if(url==='/api/admin/stats'){const d=D.orders.filter(o=>o.status==='done'),s=c=>d.filter(o=>o.cur===c).reduce((a,o)=>a+o.amount,0);return res({chk:D.orders.filter(o=>o.status==='checking').length,done:d.length,uzs:s('uzs'),rub:s('rub')})}
+  if(url==='/api/admin/orders')return res(D.orders.slice().reverse().map(o=>({...o,chek:o.chek?'x':null})));
+  if(r=url.match(/^\/api\/admin\/chek\/(\d+)/))return res(0,D.orders.find(o=>o.id==r[1]).chek);
+  if(r=url.match(/^\/api\/admin\/order\/(\d+)/)){D.orders.find(o=>o.id==r[1]).status=b.action==='confirm'?'done':'rejected';return res({ok:1})}
+  if(url==='/api/admin/packages'&&m==='GET')return res(D.pk.slice().sort((a,c)=>a.uc-c.uc));
+  if(url==='/api/admin/packages'){if(b.id){Object.assign(D.pk.find(p=>p.id==b.id),{uc:b.uc,uzs:b.uzs,rub:b.rub,active:b.active})}else D.pk.push({id:D.nextPk++,uc:b.uc,uzs:b.uzs,rub:b.rub,active:1});return res({ok:1})}
+  if(r=url.match(/^\/api\/admin\/packages\/(\d+)\/delete/)){D.pk=D.pk.filter(p=>p.id!=r[1]);return res({ok:1})}
+  if(url==='/api/admin/card'){const n=String(b.card_number).replace(/\D/g,'');if(n.length!==16||!b.card_holder)return new Response('',{status:400});D.card=n;D.holder=b.card_holder;return res({ok:1})}
+  if(url==='/api/admin/admins'&&m==='GET')return res(D.admins);
+  if(url==='/api/admin/admins'){D.admins.push(+b.tg_id);return res({ok:1})}
+  if(r=url.match(/^\/api\/admin\/admins\/(\d+)\/delete/)){if(r[1]==6897362673)return new Response('',{status:400});D.admins=D.admins.filter(i=>i!=r[1]);return res({ok:1})}
+  return new Response('',{status:404});
+};
+})();
+</script>
+
+<style>
+:root{--bg:#0e1116;--card:#171c24;--line:#262d38;--tx:#f2f4f7;--mut:#8b95a5;--ac:#f5a623;--ac2:#ffcc4d;--ok:#2ecc71;--bad:#e5534b}
+*{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent}
+body{background:var(--bg);color:var(--tx);font-family:-apple-system,Segoe UI,Roboto,sans-serif;padding-bottom:96px}
+header{padding:20px 16px 12px;background:linear-gradient(160deg,#2a1d05,#0e1116 70%);display:flex;justify-content:space-between;align-items:flex-start}
+.logo{font-size:21px;font-weight:800;color:var(--ac2)}.sub{font-size:12px;color:var(--mut);margin-top:3px}
+.adm{font-size:12px;border:1px solid var(--ac);color:var(--ac2);padding:6px 10px;border-radius:10px;font-weight:700}
+.sec{padding:14px 16px 0}.sec h2{font-size:12px;color:var(--mut);font-weight:700;margin-bottom:8px;text-transform:uppercase;letter-spacing:.6px}
+input,select{width:100%;background:var(--card);border:1px solid var(--line);color:var(--tx);padding:13px;border-radius:12px;font-size:16px;outline:none;margin-bottom:8px}
+input:focus{border-color:var(--ac)}
+.grid{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.pk{background:var(--card);border:1.5px solid var(--line);border-radius:14px;padding:12px}
+.pk.sel{border-color:var(--ac);background:#221a0a}
+.uc{font-size:19px;font-weight:800;color:var(--ac2)}.uc small{font-size:12px;color:var(--mut)}
+.sum{font-size:15px;font-weight:700;margin-top:5px}.rub{font-size:12px;color:var(--mut);margin-top:2px}
+.bar{position:fixed;left:0;right:0;bottom:0;padding:12px 16px calc(12px + env(safe-area-inset-bottom,0px));background:#0e1116ee;border-top:1px solid var(--line)}
+.btn{width:100%;border:0;border-radius:14px;padding:15px;font-size:16px;font-weight:800;background:linear-gradient(90deg,var(--ac),var(--ac2));color:#1a1203}
+.btn:disabled{opacity:.4}.btn.g{background:var(--card);color:var(--tx);border:1px solid var(--line)}
+.btn.s{padding:10px;font-size:14px;border-radius:10px}
+.tabs{display:flex;gap:8px;overflow-x:auto}
+.tab{flex:1;text-align:center;padding:11px;border-radius:12px;background:var(--card);border:1.5px solid var(--line);font-size:14px;font-weight:700;white-space:nowrap}
+.tab.sel{border-color:var(--ac);color:var(--ac2)}
+.box{background:var(--card);border:1px solid var(--line);border-radius:14px;padding:14px;margin-bottom:10px}
+.cardn{font-size:22px;font-weight:800;letter-spacing:1px;color:var(--ac2);margin:6px 0}
+.row{display:flex;justify-content:space-between;gap:8px;align-items:center;font-size:14px;margin:4px 0}
+.mut{color:var(--mut);font-size:13px}.st{font-size:12px;font-weight:700;padding:3px 8px;border-radius:8px;background:#262d38}
+.done{color:var(--ok)}.rejected{color:var(--bad)}.checking{color:var(--ac2)}
+.hide{display:none}img.chek{width:100%;border-radius:10px;margin-top:8px}
+.two{display:flex;gap:8px;margin-top:10px}.two .btn{flex:1}
+.stat{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:10px}.stat .box{margin:0}.stat b{font-size:20px;color:var(--ac2)}
+</style></head><body>
+<header><div><div class="logo">TRIX HAK UC 💵</div><div class="sub">PUBG ID orqali UC • tez, arzon, ishonchli</div></div>
+<div class="adm hide" id="admBtn" onclick="go('admin')">⚙ Admin</div></header>
+
+<div id="shop">
+ <div class="sec"><h2>PUBG ID</h2><input id="pid" inputmode="numeric" placeholder="PUBG ID raqamingiz"></div>
+ <div class="sec"><h2>Valyuta</h2><div class="tabs"><div class="tab sel" id="t-uzs" onclick="cur('uzs')">So'm</div><div class="tab" id="t-rub" onclick="cur('rub')">Rubl</div></div></div>
+ <div class="sec"><h2>UC paketlar</h2><div class="grid" id="grid"></div></div>
+ <div class="sec"><h2>Buyurtmalarim</h2><div id="mine"></div></div>
+ <div class="bar"><button class="btn" id="pay" disabled onclick="makeOrder()">Paketni tanlang</button></div>
+</div>
+
+<div id="payScr" class="hide">
+ <div class="sec"><h2>To'lov</h2>
+  <div class="box"><div class="mut">To'lov summasi</div><div class="cardn" id="pAmt"></div>
+   <div class="mut" id="pInfo"></div></div>
+  <div class="box"><div class="mut">Shu kartaga o'tkazing</div><div class="cardn" id="cNum"></div>
+   <div id="cHold" style="font-weight:700"></div>
+   <button class="btn s g" style="margin-top:10px" onclick="copyCard()">📋 Karta raqamini nusxalash</button></div>
+  <div class="mut">To'lovni qilgach, pastdagi tugmani bosing va chekni yuklang.</div></div>
+ <div class="bar"><button class="btn" onclick="claimPaid()">✅ To'lov qildim</button></div>
+</div>
+
+<div id="upScr" class="hide">
+ <div class="sec"><h2>Chekni yuklang</h2>
+  <div class="box"><div class="mut">Buyurtma <b id="uOid"></b>. To'lov chekining skrinshotini yuboring.</div>
+  <label for="file" id="drop" style="display:block;margin-top:12px;border:2px dashed var(--ac);border-radius:14px;padding:26px 10px;text-align:center;font-weight:800;color:var(--ac2)">📷 Chek rasmini tanlash<div class="mut" id="fname" style="font-weight:400;margin-top:6px">Bu yerga bosing</div></label>
+  <input type="file" id="file" accept="image/*" onchange="prev()" style="position:absolute;width:1px;height:1px;opacity:0">
+  <img id="pv" class="chek hide"></div></div>
+ <div class="bar"><button class="btn" id="sendBtn" onclick="sendChek()">Chekni yuborish</button></div>
+</div>
+
+<div id="doneScr" class="hide">
+ <div class="sec"><div class="box" style="text-align:center;padding:30px 14px"><div style="font-size:44px">🧾</div>
+  <div style="font-size:18px;font-weight:800;margin:8px 0">Chek yuborildi</div>
+  <div class="mut">Admin to'lovni tekshiradi. Natija botga xabar bo'lib keladi.</div></div></div>
+ <div class="bar"><button class="btn" onclick="go('shop')">Bosh sahifa</button></div>
+</div>
+
+<div id="admin" class="hide">
+ <div class="sec"><div class="tabs" style="margin-bottom:12px">
+  <div class="tab sel" data-t="ord" onclick="aTab('ord')">Buyurtma</div><div class="tab" data-t="prc" onclick="aTab('prc')">Narx</div>
+  <div class="tab" data-t="crd" onclick="aTab('crd')">Karta</div><div class="tab" data-t="adm" onclick="aTab('adm')">Admin</div></div>
+  <div id="aBody"></div></div>
+ <div class="bar"><button class="btn g" onclick="go('shop')">← Do'konga qaytish</button></div>
+</div>
+
+<script>
+const tgw=window.Telegram&&Telegram.WebApp;if(tgw){tgw.ready();tgw.expand()}
+const INIT=tgw?tgw.initData:'';
+const $=id=>document.getElementById(id), f=n=>Number(n).toLocaleString('ru-RU').replace(/\u00a0/g,' ');
+async function api(path,body,form){
+  const o={headers:{'X-Init-Data':INIT}};
+  if(form){o.method='POST';o.body=form}
+  else if(body!==undefined){o.method='POST';o.headers['Content-Type']='application/json';o.body=JSON.stringify(body)}
+  const r=await fetch(path,o);if(!r.ok)throw new Error(r.status);return r;
+}
+const J=async(p,b)=>(await api(p,b)).json();
+let S={packages:[]},sel=null,c='uzs',cur_order=null;
+const ST={new:'Yangi',paid_claimed:"To'lov qildim",checking:'Tekshirilmoqda',done:'Tasdiqlandi',rejected:'Rad etildi'};
+
+function go(s){['shop','payScr','upScr','doneScr','admin'].forEach(x=>$(x).classList.toggle('hide',x!==s));
+  if(s==='shop')loadMine();if(s==='admin')aTab('ord');scrollTo(0,0)}
+async function init(){S=await J('/api/state');$('admBtn').classList.toggle('hide',!S.is_admin);draw();loadMine()}
+function draw(){
+  $('grid').innerHTML=S.packages.map(p=>`<div class="pk ${sel===p.id?'sel':''}" onclick="sel=${p.id};draw()"><div class="uc">${f(p.uc)} <small>UC</small></div><div class="sum">${f(p.uzs)} so'm</div><div class="rub">${f(p.rub)} rubl</div></div>`).join('');
+  const p=S.packages.find(x=>x.id===sel),b=$('pay');
+  b.disabled=!p;b.textContent=p?`${f(p.uc)} UC — ${f(p[c])} ${c==='uzs'?"so'm":'rubl'} to'lash`:'Paketni tanlang';
+}
+function cur(x){c=x;$('t-uzs').classList.toggle('sel',x==='uzs');$('t-rub').classList.toggle('sel',x==='rub');draw()}
+async function loadMine(){
+  try{const l=await J('/api/my_orders');$('mine').innerHTML=l.length?l.map(o=>`<div class="box"><div class="row"><b>#${o.id} • ${f(o.uc)} UC</b><span class="st ${o.status}">${ST[o.status]}</span></div><div class="mut">PUBG ID ${o.pubg_id} • ${f(o.amount)} ${o.cur==='uzs'?"so'm":'rubl'}</div></div>`).join(''):'<div class="mut">Hali buyurtma yo\'q</div>'}catch(e){}
+}
+async function makeOrder(){
+  const id=$('pid').value.trim();if(!/^\d{5,15}$/.test(id)){alert("PUBG ID ni to'g'ri kiriting");return}
+  try{cur_order=await J('/api/order',{pubg_id:id,pkg_id:sel,cur:c})}catch(e){alert('Xatolik, qayta urinib ko\'ring');return}
+  const p=S.packages.find(x=>x.id===sel);
+  $('pAmt').textContent=f(cur_order.amount)+' '+(c==='uzs'?"so'm":'rubl');
+  $('pInfo').textContent=`#${cur_order.id} • ${f(p.uc)} UC • PUBG ID ${id}`;
+  $('cNum').textContent=S.card_number.replace(/(\d{4})(?=\d)/g,'$1 ');$('cHold').textContent=S.card_holder;go('payScr');
+}
+function copyCard(){navigator.clipboard&&navigator.clipboard.writeText(S.card_number);tgw&&tgw.HapticFeedback&&tgw.HapticFeedback.notificationOccurred('success')}
+async function claimPaid(){await api(`/api/order/${cur_order.id}/paid`,{});$('uOid').textContent='#'+cur_order.id;$('file').value='';$('fname').textContent='Bu yerga bosing';$('pv').classList.add('hide');go('upScr')}
+function prev(){const fl=$('file').files[0];if(!fl)return;$('fname').textContent='✅ '+fl.name;$('pv').src=URL.createObjectURL(fl);$('pv').classList.remove('hide')}
+async function sendChek(){
+  const fl=$('file').files[0];if(!fl){alert('Chek rasmini tanlang');return}
+  $('sendBtn').disabled=true;const fd=new FormData();fd.append('file',fl);
+  try{await api(`/api/order/${cur_order.id}/chek`,undefined,fd);go('doneScr')}catch(e){alert('Yuklashda xatolik: '+e.message+(String(e.message)==='413'?" (rasm juda katta, 8MB gacha)":''))}
+  $('sendBtn').disabled=false;
+}
+
+/* ---------- ADMIN ---------- */
+let aT='ord';
+function aTab(t){aT=t;document.querySelectorAll('[data-t]').forEach(e=>e.classList.toggle('sel',e.dataset.t===t));({ord:aOrders,prc:aPrices,crd:aCard,adm:aAdmins})[t]()}
+async function aOrders(){
+  const [st,l]=await Promise.all([J('/api/admin/stats'),J('/api/admin/orders')]);
+  $('aBody').innerHTML=`<div class="stat"><div class="box"><div class="mut">Tekshiruvda</div><b>${st.chk}</b></div><div class="box"><div class="mut">Tasdiqlangan</div><b>${st.done}</b></div><div class="box"><div class="mut">Tushum (so'm)</div><b>${f(st.uzs)}</b></div><div class="box"><div class="mut">Tushum (rubl)</div><b>${f(st.rub)}</b></div></div>`+
+  l.map(o=>`<div class="box"><div class="row"><b>#${o.id} • ${f(o.uc)} UC</b><span class="st ${o.status}">${ST[o.status]}</span></div>
+  <div class="mut">${o.tg_name} • PUBG ID <b>${o.pubg_id}</b><br>${f(o.amount)} ${o.cur==='uzs'?"so'm":'rubl'}</div>
+  ${o.chek?`<button class="btn s g" style="margin-top:8px" onclick="showChek(${o.id},this)">🧾 Chekni ko'rish</button><div id="ck${o.id}"></div>`:''}
+  ${['checking','paid_claimed'].includes(o.status)?`<div class="two"><button class="btn s" onclick="decide(${o.id},'confirm')">✅ Tasdiqlash</button><button class="btn s g" onclick="decide(${o.id},'reject')">❌ Rad etish</button></div>`:''}</div>`).join('')||'<div class="mut">Buyurtma yo\'q</div>';
+}
+async function showChek(id,b){const r=await api('/api/admin/chek/'+id);$('ck'+id).innerHTML=`<img class="chek" src="${URL.createObjectURL(await r.blob())}">`;b.remove()}
+async function decide(id,a){if(!confirm(a==='confirm'?'Tasdiqlaysizmi?':'Rad etasizmi?'))return;await J('/api/admin/order/'+id,{action:a});aOrders()}
+async function aPrices(){
+  const l=await J('/api/admin/packages');
+  $('aBody').innerHTML=l.map(p=>`<div class="box"><div class="row"><b>${f(p.uc)} UC</b><span class="mut">${p.active?'faol':"o'chiq"}</span></div>
+  <input id="u${p.id}" value="${p.uc}" inputmode="numeric"><input id="z${p.id}" value="${p.uzs}" inputmode="numeric"><input id="r${p.id}" value="${p.rub}" inputmode="numeric">
+  <div class="two"><button class="btn s" onclick="savePk(${p.id},${p.active})">Saqlash</button><button class="btn s g" onclick="togglePk(${p.id},${p.uc},${p.uzs},${p.rub},${p.active})">${p.active?"O'chirib qo'yish":'Yoqish'}</button><button class="btn s g" onclick="delPk(${p.id})">🗑</button></div></div>`).join('')+
+  `<div class="box"><b>Yangi paket</b><input id="nu" placeholder="UC" inputmode="numeric"><input id="nz" placeholder="So'm narxi" inputmode="numeric"><input id="nr" placeholder="Rubl narxi" inputmode="numeric"><button class="btn s" onclick="addPk()">Qo'shish</button></div>`;
+}
+async function savePk(id,a){await J('/api/admin/packages',{id,uc:+$('u'+id).value,uzs:+$('z'+id).value,rub:+$('r'+id).value,active:a});await reload();aPrices()}
+async function togglePk(id,uc,uzs,rub,a){await J('/api/admin/packages',{id,uc,uzs,rub,active:a?0:1});aPrices()}
+async function delPk(id){if(confirm("O'chirasizmi?")){await J(`/api/admin/packages/${id}/delete`,{});aPrices()}}
+async function addPk(){await J('/api/admin/packages',{uc:+$('nu').value,uzs:+$('nz').value,rub:+$('nr').value});aPrices()}
+async function reload(){S=await J('/api/state');draw()}
+function aCard(){
+  $('aBody').innerHTML=`<div class="box"><div class="mut">Hozirgi karta</div><div class="cardn">${S.card_number.replace(/(\d{4})(?=\d)/g,'$1 ')}</div><b>${S.card_holder}</b></div>
+  <div class="box"><b>Kartani almashtirish</b><input id="cn" placeholder="16 xonali karta raqami" inputmode="numeric"><input id="ch" placeholder="Karta egasi ismi"><button class="btn s" onclick="saveCard()">Saqlash</button></div>`;
+}
+async function saveCard(){try{await J('/api/admin/card',{card_number:$('cn').value,card_holder:$('ch').value});await reload();aCard()}catch(e){alert("Karta raqami 16 ta raqam bo'lishi va ism kiritilishi kerak")}}
+async function aAdmins(){
+  const l=await J('/api/admin/admins');
+  $('aBody').innerHTML=l.map(i=>`<div class="box row"><b>${i}</b><button class="btn s g" style="width:auto" onclick="delAdm(${i})">O'chirish</button></div>`).join('')+
+  `<div class="box"><b>Admin qo'shish</b><div class="mut" style="margin:4px 0 8px">Telegram ID raqamini kiriting</div><input id="na" placeholder="Telegram ID" inputmode="numeric"><button class="btn s" onclick="addAdm()">Qo'shish</button></div>`;
+}
+async function addAdm(){if($('na').value){await J('/api/admin/admins',{tg_id:$('na').value});aAdmins()}}
+async function delAdm(i){try{await J(`/api/admin/admins/${i}/delete`,{});aAdmins()}catch(e){alert("Asosiy adminni o'chirib bo'lmaydi")}}
+init();
+</script></body></html>
